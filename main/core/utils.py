@@ -74,6 +74,91 @@ def http_get(url, timeout=30, retries=4, backoff=4.0, **kw):
     return resp
 
 
+# --- 走 VPN 代理的独立会话：仅 Scholar/GitHub 用（DBLP/arXiv 仍直连）---
+# 国内直连 scholar.google.com / api.github.com 常被墙（SSL EOF）；这两个站点
+# 改走系统/VPN 代理。代理地址优先取 config.SCHOLAR_PROXY，其次系统代理。
+_proxy_session = None
+
+
+def _detect_system_proxy():
+    """从环境变量或 Windows 注册表读系统代理，返回 'http://host:port' 或 ''。"""
+    for k in ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy"):
+        v = _os.environ.get(k)
+        if v:
+            return v if "://" in v else f"http://{v}"
+    if sys.platform == "win32":
+        try:
+            import winreg
+            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                                 r"Software\Microsoft\Windows\CurrentVersion\Internet Settings")
+            enable, _ = winreg.QueryValueEx(key, "ProxyEnable")
+            if enable:
+                server, _ = winreg.QueryValueEx(key, "ProxyServer")
+                if server and "=" not in server:      # 简单 host:port（非 per-protocol）
+                    return f"http://{server}"
+        except Exception:
+            pass
+    return ""
+
+
+def _get_proxy_session():
+    global _proxy_session
+    if _proxy_session is not None:
+        return _proxy_session
+    import config
+    proxy = getattr(config, "SCHOLAR_PROXY", "") or _detect_system_proxy()
+    s = requests.Session()
+    s.headers.update(_session.headers)
+    if proxy:
+        s.proxies = {"http": proxy, "https": proxy}
+        log(f"[proxy] Scholar/GitHub 走代理 {proxy}")
+    else:
+        log("[proxy] 未发现可用代理，Scholar/GitHub 直连（国内可能不可达）")
+    _proxy_session = s
+    return s
+
+
+def http_get_proxied(url, timeout=30, retries=2, backoff=3.0, **kw):
+    """经 VPN 代理的 GET（Scholar/GitHub 专用）。"""
+    sess = _get_proxy_session()
+    kw.setdefault("cookies", {"CONSENT": "YES+cb"})   # 跳过 Google 同意页
+    last = None
+    for attempt in range(retries):
+        try:
+            resp = sess.get(url, timeout=timeout, **kw)
+            if resp.status_code in _RETRY_STATUS and attempt < retries - 1:
+                time.sleep(_retry_wait(resp, attempt, backoff))
+                continue
+            return resp
+        except Exception as e:
+            last = e
+            if attempt < retries - 1:
+                time.sleep(_retry_wait(None, attempt, backoff))
+    if last:
+        raise last
+    return resp
+
+
+def http_post_proxied(url, data=None, timeout=30, retries=2, backoff=3.0, **kw):
+    """经 VPN 代理的 POST（DuckDuckGo HTML 搜索用）。"""
+    sess = _get_proxy_session()
+    last = None
+    for attempt in range(retries):
+        try:
+            resp = sess.post(url, data=data, timeout=timeout, **kw)
+            if resp.status_code in _RETRY_STATUS and attempt < retries - 1:
+                time.sleep(_retry_wait(resp, attempt, backoff))
+                continue
+            return resp
+        except Exception as e:
+            last = e
+            if attempt < retries - 1:
+                time.sleep(_retry_wait(None, attempt, backoff))
+    if last:
+        raise last
+    return resp
+
+
 def http_post(url, data=None, timeout=30, retries=4, backoff=4.0, **kw):
     last = None
     for attempt in range(retries):

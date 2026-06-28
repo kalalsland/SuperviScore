@@ -8,7 +8,7 @@
 from __future__ import annotations
 import os
 import re
-from core.utils import http_get, log, polite_sleep
+from core.utils import http_get_proxied, log, polite_sleep
 import config
 
 API = "https://api.github.com"
@@ -37,8 +37,8 @@ def fetch_user_repos(username: str, top: int = 5) -> dict:
         return {}
     url = f"{API}/users/{username}/repos?per_page=100&sort=pushed"
     try:
-        resp = http_get(url, timeout=config.HTTP_TIMEOUT, retries=2, backoff=4.0,
-                        headers=_headers())
+        resp = http_get_proxied(url, timeout=config.HTTP_TIMEOUT, retries=2, backoff=4.0,
+                                headers=_headers())
         if resp.status_code != 200:
             return {}
         repos = resp.json()

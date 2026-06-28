@@ -65,6 +65,9 @@ ARXIV_SLEEP = 3.0           # arXiv 请求间隔（秒）
 # 学术影响力数据源（best-effort，取不到自动降级到 DBLP/arXiv，不阻断流程）
 USE_SCHOLAR = True          # Google Scholar 取引用量/h-index/代表作（需能访问 scholar.google.com）
 USE_GITHUB = True           # GitHub 取主页/代表仓库（仅当老师主页/简介里有 github 链接才采纳）
+# Scholar/GitHub 走 VPN 代理（国内直连常被墙）。留空=自动探测系统/环境代理；
+# 也可显式写死，如 "http://127.0.0.1:33210"。DBLP/arXiv 不受影响，仍直连。
+SCHOLAR_PROXY = ""
 SCHOLAR_SLEEP = 3.0         # Scholar 请求间隔（反爬，建议大一些）
 GITHUB_SLEEP = 1.0          # GitHub API 间隔
 HTTP_TIMEOUT = 30           # 普通网页/接口请求超时

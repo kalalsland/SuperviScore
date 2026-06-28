@@ -56,8 +56,12 @@ pip install requests openai pymupdf pypdf
 3. **DBLP**（保底主源）：按姓名→拼音检索 + **affiliation 消歧**，取近 5 篇（标题/年/会议/合作者）。
 4. **arXiv**：按 DBLP 论文标题补摘要；DBLP 无果时按作者名兜底。
 
-> Scholar/GitHub 需能访问对应站点（国内通常需代理）。取不到时仅缺引用量列，
-> 排序与方向分析照常用 DBLP/arXiv 完成。
+> Scholar/GitHub 国内直连常被墙（SSL EOF）。本工具对这两源**单独走 VPN 代理**
+> （DBLP/arXiv 仍直连不受影响）：默认自动探测系统代理，也可在 `config.py` 设
+> `SCHOLAR_PROXY = "http://127.0.0.1:33210"` 写死。其中 Scholar 的作者搜索接口在
+> 代理出口 IP 上会被导向登录墙，故改用 DuckDuckGo 发现作者 user_id 再抓主页；
+> 命中疑似同名他人会按姓名校验自动丢弃。连续多次失败会熔断、本轮停用并降级。
+> 取不到时仅缺引用量列，排序与方向分析照常用 DBLP/arXiv 完成。
 
 ## 四、打分逻辑（直博·套磁能上岸优先）
 
