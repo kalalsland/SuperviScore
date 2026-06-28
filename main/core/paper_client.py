@@ -7,7 +7,7 @@ from __future__ import annotations
 import re
 from core.models import Paper
 from core.utils import log, Cache
-from core import dblp_client, arxiv_client
+from core import dblp_client, arxiv_client, scholar_client, github_client
 from core.pinyin_names import dblp_query_variants
 import config
 
@@ -147,3 +147,70 @@ def recent_papers(cn_name: str, pinyin: str, institute_hint: str,
         to_store["papers"] = [p.__dict__ for p in papers]
         cache.set("papers", ckey, to_store)
     return result
+
+
+def enrich_impact(cn_name: str, pinyin: str, institute_hint: str,
+                  homepage: str = "", bio: str = "",
+                  cache: Cache | None = None) -> dict:
+    """best-effort 取学术影响力：Google Scholar(引用量/h-index/代表作) + GitHub(star/代表仓库)。
+    任何源失败都安静降级，返回的 dict 里对应字段为 None/空。
+    返回 {
+      'citations', 'h_index', 'scholar_url', 'scholar_works':[...],
+      'github_url', 'github_stars', 'github_repos':[(name,star,desc)],
+      'representative_works':[...],   # 综合代表作（scholar 优先, github 补）
+      'impact_source': 'scholar+github'|'scholar'|'github'|'none',
+    }
+    """
+    ckey = f"impact|{cn_name}|{pinyin}|{institute_hint}|{homepage}"
+    if cache:
+        cached = cache.get("impact", ckey)
+        if cached is not None:
+            return cached
+
+    out = {"citations": None, "h_index": None, "scholar_url": "", "scholar_works": [],
+           "github_url": "", "github_stars": None, "github_repos": [],
+           "representative_works": [], "impact_source": "none"}
+
+    aff_hint = (getattr(config, "SCHOOL_DBLP_AFFILIATION", []) or [""])[0]
+    name_en = dblp_query_variants(pinyin)[0]   # "名 姓"
+
+    # 1) Google Scholar（best-effort）
+    sources = []
+    if getattr(config, "USE_SCHOLAR", True):
+        try:
+            sch = scholar_client.find_author(name_en, aff_hint)
+        except Exception as e:
+            log(f"[impact] scholar 异常(降级) {cn_name}: {e}")
+            sch = {}
+        if sch:
+            out["citations"] = sch.get("citations")
+            out["h_index"] = sch.get("h_index")
+            out["scholar_url"] = sch.get("scholar_url", "")
+            out["scholar_works"] = sch.get("representative_works", [])
+            if out["scholar_url"]:
+                sources.append("scholar")
+
+    # 2) GitHub（仅当主页/简介里出现 github 链接，避免同名误判）
+    if getattr(config, "USE_GITHUB", True):
+        try:
+            gh = github_client.find_profile(name_en, homepage, bio)
+        except Exception as e:
+            log(f"[impact] github 异常(降级) {cn_name}: {e}")
+            gh = {}
+        if gh:
+            out["github_url"] = gh.get("github_url", "")
+            out["github_stars"] = gh.get("stars")
+            out["github_repos"] = gh.get("repos", [])
+            if out["github_url"]:
+                sources.append("github")
+
+    # 综合代表作：Scholar 高被引优先，GitHub 高 star 仓库补充
+    reps = list(out["scholar_works"])
+    for name, star, _desc in out["github_repos"][:3]:
+        reps.append(f"{name}（GitHub ★{star}）")
+    out["representative_works"] = reps[:6]
+    out["impact_source"] = "+".join(sources) if sources else "none"
+
+    if cache:
+        cache.set("impact", ckey, out)
+    return out

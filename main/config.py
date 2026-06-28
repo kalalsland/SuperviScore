@@ -9,18 +9,21 @@ import os
 # ---------------------------------------------------------------------------
 # 1. 选择本次要跑的学校（对应 schools/ 下的模块名）
 # ---------------------------------------------------------------------------
-SCHOOL = "sjtu_cs"          # 下次复旦改成 "fudan_cs"
+SCHOOL = "sjtu_cs"          # 可选: sjtu_cs / fudan_ai / fudan_sds
 
 # 该学校在 DBLP affiliation note 里的英文关键词（用于作者消歧，强烈建议填）
 # 换学校时一并改这里。多个关键词命中其一即可。
+#   交大: ["Shanghai Jiao Tong", "Jiao Tong University"]
+#   复旦: ["Fudan"]
 SCHOOL_DBLP_AFFILIATION = ["Shanghai Jiao Tong", "Jiao Tong University"]
 
 # ---------------------------------------------------------------------------
 # 2. 大模型 API（OpenAI 兼容）
-#    出于安全，这里不硬编码任何密钥。请通过环境变量提供，或直接在下面填入你自己的值。
-#      export TAOCI_LLM_BASE_URL="https://your-endpoint/v1"
-#      export TAOCI_LLM_API_KEY="sk-your-own-key"
-#      export TAOCI_LLM_MODEL="your-model-name"
+#    优先级：环境变量 TAOCI_LLM_* > config_local.py > 这里的默认值（默认空）。
+#    出于安全，仓库里不硬编码密钥。本地用法二选一：
+#      (a) 设环境变量 TAOCI_LLM_BASE_URL / TAOCI_LLM_API_KEY / TAOCI_LLM_MODEL；
+#      (b) 复制 config_local.example.py 为 config_local.py 并填入自己的值
+#          （config_local.py 已被 .gitignore 排除，不会上传）。
 #    任意 OpenAI 兼容端点均可（OpenAI / DeepSeek / 本地 vLLM / Ollama 等）。
 # ---------------------------------------------------------------------------
 LLM_BASE_URL = os.environ.get("TAOCI_LLM_BASE_URL", "")  # 例: https://api.openai.com/v1
@@ -28,6 +31,15 @@ LLM_API_KEY  = os.environ.get("TAOCI_LLM_API_KEY",  "")  # 例: sk-xxxxxxxx
 LLM_MODEL    = os.environ.get("TAOCI_LLM_MODEL",    "")  # 例: gpt-4o-mini
 LLM_TIMEOUT  = 120          # 单次请求超时（秒）
 LLM_MAX_RETRY = 3           # 失败重试次数
+
+# 本地覆盖（config_local.py 不入库）：未设环境变量时，用本地文件里的值补上
+try:
+    import config_local as _local      # noqa
+    LLM_BASE_URL = LLM_BASE_URL or getattr(_local, "LLM_BASE_URL", "")
+    LLM_API_KEY  = LLM_API_KEY  or getattr(_local, "LLM_API_KEY",  "")
+    LLM_MODEL    = LLM_MODEL    or getattr(_local, "LLM_MODEL",    "")
+except Exception:
+    pass
 
 # ---------------------------------------------------------------------------
 # 3. 路径配置
@@ -45,10 +57,16 @@ OUTPUT_ROOT = TOOL_ROOT
 LIMIT = 0                   # >0 时只处理前 N 位老师（冒烟测试用）；0=全部
 TOP_N_DETAIL = 20           # 仅对推荐分前 N 位生成 Markdown 详情 + 套磁信
 RECENT_PAPERS = 5           # 每位老师检索最近几篇论文
+TOP_N_LETTER = 5            # 套磁信：综合分前 N + 方向匹配前 N 各生成一封
 DBLP_SLEEP = 1.5            # DBLP 请求间隔（秒，遵守 API 礼仪）
 DBLP_RETRIES = 5            # DBLP 限流较狠，重试次数多一些
 DBLP_BACKOFF = 8.0          # DBLP 退避基数（秒）：8,16,24,32... 给限流足够冷却
 ARXIV_SLEEP = 3.0           # arXiv 请求间隔（秒）
+# 学术影响力数据源（best-effort，取不到自动降级到 DBLP/arXiv，不阻断流程）
+USE_SCHOLAR = True          # Google Scholar 取引用量/h-index/代表作（需能访问 scholar.google.com）
+USE_GITHUB = True           # GitHub 取主页/代表仓库（仅当老师主页/简介里有 github 链接才采纳）
+SCHOLAR_SLEEP = 3.0         # Scholar 请求间隔（反爬，建议大一些）
+GITHUB_SLEEP = 1.0          # GitHub API 间隔
 HTTP_TIMEOUT = 30           # 普通网页/接口请求超时
 USE_CACHE = True            # 是否使用磁盘缓存（断点续跑、省 token）
 
@@ -86,5 +104,6 @@ NON_ADVISOR_TITLES = ["实验师", "讲师", "助理", "工程师", "博士后",
 # 太牛信号关键词（出现在简介里 → 太牛难入，谨慎套）
 TOO_SENIOR_KEYWORDS = ["院士", "杰出青年", "杰青", "长江学者", "ACM Fellow", "IEEE Fellow",
                        "CCF Fellow", "Fellow", "国家级", "千人", "万人", "优青", "讲席"]
-# 新晋 PI 信号
-JUNIOR_PI_TITLES = ["副教授", "助理教授", "特别研究员", "长聘教轨副教授", "Assistant Professor"]
+# 新晋 PI 信号（青年导师，直博相对好进）
+JUNIOR_PI_TITLES = ["副教授", "助理教授", "特别研究员", "长聘教轨副教授",
+                    "青年研究员", "青年副研究员", "副研究员", "Assistant Professor"]

@@ -36,9 +36,18 @@ class Teacher:
     email: str = ""
     bio: str = ""                   # 个人简介原文
     papers_listed: list[str] = field(default_factory=list)   # 官网列出的论文标题
-    papers: list[Paper] = field(default_factory=list)        # DBLP/arXiv 检索到的近作
+    papers: list[Paper] = field(default_factory=list)        # 检索到的近作
     dblp_url: str = ""
     identity_confidence: float = 1.0   # 论文检索消歧置信度 0-1
+    paper_source: str = ""          # 论文主源: scholar/github/dblp/arxiv/none
+
+    # —— 学术影响力（Google Scholar / GitHub，best-effort）——
+    citations: Optional[int] = None        # 总引用量（Scholar）
+    h_index: Optional[int] = None          # h 指数（Scholar）
+    scholar_url: str = ""                  # Google Scholar 主页
+    github_url: str = ""                   # GitHub 主页
+    github_stars: Optional[int] = None     # 代表仓库总 star
+    representative_works: list[str] = field(default_factory=list)  # 代表作（高被引/高star）
 
     # —— 分析结果（analyzer 填充）——
     analysis: dict = field(default_factory=dict)

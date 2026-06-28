@@ -32,18 +32,32 @@ pip install requests openai pymupdf pypdf
 ## 三、配置（只需改 `config.py`）
 
 > 首次使用必读：仓库不含密钥与简历，请先 1) 把你的简历 PDF 放进 `小工具/个人履历材料/`，
-> 2) 配置大模型 API（环境变量 `TAOCI_LLM_BASE_URL/KEY/MODEL`，或直接改 `config.py` 第 2 节）。
-> 详见仓库根目录 [README](../README.md) 的「快速上手」。
+> 2) 配置大模型 API：复制 `config_local.example.py` 为 `config_local.py` 填入你的端点/密钥
+> （该文件已被 .gitignore 排除，不会上传），或设环境变量 `TAOCI_LLM_BASE_URL/KEY/MODEL`。
 
 | 项 | 说明 |
 |---|---|
-| `SCHOOL` | 当前学校解析器名（`sjtu_cs`）。换学校改这里。 |
-| `SCHOOL_DBLP_AFFILIATION` | 该校在 DBLP 里的英文名关键词，用于作者消歧（强烈建议填准）。 |
-| `LLM_BASE_URL/KEY/MODEL` | 大模型 API（OpenAI 兼容）。**不要硬编码自己的密钥后再提交**；推荐用环境变量 `TAOCI_LLM_*`。 |
+| `SCHOOL` | 当前学校解析器名。可选 `sjtu_cs` / `fudan_ai`（计算与智能创新学院）/ `fudan_sds`（大数据学院）。 |
+| `SCHOOL_DBLP_AFFILIATION` | 该校在 DBLP 里的英文名关键词，用于作者消歧。交大 `["Shanghai Jiao Tong"]`，复旦 `["Fudan"]`。 |
+| `LLM_BASE_URL/KEY/MODEL` | 大模型 API（OpenAI 兼容）。**密钥放 `config_local.py` 或环境变量**，勿提交。 |
 | `RESUME_DIR` | 个人简历 PDF 目录（默认 `小工具/个人履历材料`）。 |
 | `LIMIT` | >0 只跑前 N 人（测试用）；0=全部。 |
-| `TOP_N_DETAIL` | 生成详情+套磁信的前 N 名（默认 20）。 |
+| `TOP_N_DETAIL` | 生成详情的前 N 名（默认 20）。 |
+| `TOP_N_LETTER` | 生成套磁信的范围：综合分前 N ∪ 方向匹配前 N（默认 5）。 |
+| `USE_SCHOLAR` / `USE_GITHUB` | 是否启用 Google Scholar / GitHub 取引用量·代表作（best-effort，取不到自动降级）。 |
 | `WEIGHTS` | 全部打分权重，集中可调。 |
+
+## 三点五、论文与影响力数据源（多源交叉，自动降级）
+
+每位老师的论文与学术影响力按以下优先级采集，任一源失败都安静降级、不阻断：
+
+1. **Google Scholar**（`USE_SCHOLAR`）：引用量、h-index、高被引代表作。
+2. **GitHub**（`USE_GITHUB`）：当老师主页/简介里出现 github 链接时，取其高 star 代表仓库。
+3. **DBLP**（保底主源）：按姓名→拼音检索 + **affiliation 消歧**，取近 5 篇（标题/年/会议/合作者）。
+4. **arXiv**：按 DBLP 论文标题补摘要；DBLP 无果时按作者名兜底。
+
+> Scholar/GitHub 需能访问对应站点（国内通常需代理）。取不到时仅缺引用量列，
+> 排序与方向分析照常用 DBLP/arXiv 完成。
 
 ## 四、打分逻辑（直博·套磁能上岸优先）
 

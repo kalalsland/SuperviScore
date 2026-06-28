@@ -47,15 +47,36 @@ def split_name(pinyin: str) -> tuple[str, str]:
     return p, ""
 
 
+def cn_to_pinyin(cn_name: str) -> str:
+    """中文姓名 → 连写小写拼音（复旦等无 URL 拼音时用）。无 pypinyin 则返回空。
+    复姓优先用拼音库整体转换，姓名边界由 split_name 再切。
+    """
+    cn = re.sub(r"[^一-龥]", "", cn_name or "")
+    if not cn:
+        return ""
+    try:
+        from pypinyin import lazy_pinyin
+        return "".join(lazy_pinyin(cn)).lower()
+    except Exception:
+        return ""
+
+
 def dblp_query_variants(pinyin: str) -> list[str]:
-    """生成 DBLP 检索式候选，按可信度排序。"""
-    given, sur = split_name(pinyin)
+    """生成 DBLP 检索式候选，按可信度排序。
+    传入既可是连写拼音（如 chenhaibo），也可是中文姓名（自动转拼音）。
+    """
+    p = (pinyin or "").strip()
+    if re.search(r"[一-龥]", p):     # 传进来是中文 → 先转拼音
+        p = cn_to_pinyin(p)
+    if not p:
+        return []
+    given, sur = split_name(p)
     out = []
     if sur:
         out.append(f"{given} {sur}")   # Haibo Chen
         out.append(f"{sur} {given}")   # 兜底另一种顺序
     # 整串兜底（万一姓表没覆盖）
-    out.append(pinyin.strip().lower())
+    out.append(p.lower())
     # 去重保序
     seen, uniq = set(), []
     for q in out:
