@@ -1,13 +1,13 @@
-# 套磁导师推荐小工具
+# SuperviScore · 套磁导师推荐工具
 
 面向**直博/保研**申请的导师筛选与套磁辅助工具。自动爬取学院教师名录，
-检索每位老师近期论文（DBLP 优先、arXiv 补摘要），结合你的个人简历，用大模型
+检索每位老师近期论文（Scholar/GitHub 优先、DBLP/arXiv 保底），结合你的个人简历，用大模型
 做**研究方向细化 + 匹配打分 + 套磁信草稿**，输出按"套磁能否上岸"倒排的名单。
 
 ## 一、快速开始
 
 ```bash
-cd 小工具/main
+cd main          # 仓库根目录 SuperviScore/ 下
 
 # 冒烟测试：只跑前 3 位老师
 python run.py 3
@@ -16,7 +16,7 @@ python run.py 3
 python run.py
 ```
 
-结果写到 `小工具/交大导师联系/`：
+结果写到仓库根目录下的 `交大导师联系/`（学校不同则目录名不同）：
 - `推荐名单.csv`：**全部老师**按推荐分倒排（Excel 直接打开，已带 BOM）。
 - `top20详情/NN_姓名.md`：**前 20 名**的详细分析 + 个性化**套磁邮件草稿**。
 - `_缓存/`：网页/论文/LLM 结果缓存，**断点续跑、重跑省钱**（删掉即全部重算）。
@@ -31,7 +31,7 @@ pip install requests openai pymupdf pypdf
 
 ## 三、配置（只需改 `config.py`）
 
-> 首次使用必读：仓库不含密钥与简历，请先 1) 把你的简历 PDF 放进 `小工具/个人履历材料/`，
+> 首次使用必读：仓库不含密钥与简历，请先 1) 把你的简历 PDF 放进仓库根目录的 `个人履历材料/`，
 > 2) 配置大模型 API：复制 `config_local.example.py` 为 `config_local.py` 填入你的端点/密钥
 > （该文件已被 .gitignore 排除，不会上传），或设环境变量 `TAOCI_LLM_BASE_URL/KEY/MODEL`。
 
@@ -40,7 +40,7 @@ pip install requests openai pymupdf pypdf
 | `SCHOOL` | 当前学校解析器名。可选 `sjtu_cs` / `fudan_ai`（计算与智能创新学院）/ `fudan_sds`（大数据学院）。 |
 | `SCHOOL_DBLP_AFFILIATION` | 该校在 DBLP 里的英文名关键词，用于作者消歧。交大 `["Shanghai Jiao Tong"]`，复旦 `["Fudan"]`。 |
 | `LLM_BASE_URL/KEY/MODEL` | 大模型 API（OpenAI 兼容）。**密钥放 `config_local.py` 或环境变量**，勿提交。 |
-| `RESUME_DIR` | 个人简历 PDF 目录（默认 `小工具/个人履历材料`）。 |
+| `RESUME_DIR` | 个人简历 PDF 目录（默认仓库根目录的 `个人履历材料`）。 |
 | `LIMIT` | >0 只跑前 N 人（测试用）；0=全部。 |
 | `TOP_N_DETAIL` | 生成详情的前 N 名（默认 20）。 |
 | `TOP_N_LETTER` | 生成套磁信的范围：综合分前 N ∪ 方向匹配前 N（默认 5）。 |
