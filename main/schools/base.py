@@ -36,4 +36,13 @@ def get_parser(school_name: str) -> SchoolParser:
     if school_name == "fudan_sds":
         from schools.fudan_sds import FudanSdsParser
         return FudanSdsParser()
+    if school_name == "sjtu_sais":
+        from schools.sjtu_sais import SjtuSaisParser
+        return SjtuSaisParser()
+    if school_name == "sjtu_see":
+        from schools.sjtu_see import SjtuSeeParser
+        return SjtuSeeParser()
+    if school_name == "sjtu_icisee":
+        from schools.sjtu_icisee import SjtuIciseeParser
+        return SjtuIciseeParser()
     raise ValueError(f"未知学校解析器: {school_name}（请在 schools/ 下实现并在 get_parser 注册）")

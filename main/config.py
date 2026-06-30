@@ -9,13 +9,17 @@ import os
 # ---------------------------------------------------------------------------
 # 1. 选择本次要跑的学校（对应 schools/ 下的模块名）
 # ---------------------------------------------------------------------------
-SCHOOL = "sjtu_cs"          # 可选: sjtu_cs / fudan_ai / fudan_sds
+SCHOOL = "fudan_ai"          # 可选: sjtu_cs / fudan_ai / fudan_sds
+                             #       sjtu_sais（交大自动化与感知学院）
+                             #       sjtu_see（交大电气工程学院）
+                             #       sjtu_icisee（交大集成电路学院/信息与电子工程学院）
 
 # 该学校在 DBLP affiliation note 里的英文关键词（用于作者消歧，强烈建议填）
 # 换学校时一并改这里。多个关键词命中其一即可。
-#   交大: ["Shanghai Jiao Tong", "Jiao Tong University"]
+#   交大所有学院: ["Shanghai Jiao Tong", "Jiao Tong University"]
 #   复旦: ["Fudan"]
-SCHOOL_DBLP_AFFILIATION = ["Shanghai Jiao Tong", "Jiao Tong University"]
+# SCHOOL_DBLP_AFFILIATION = ["Shanghai Jiao Tong", "Jiao Tong University"]
+SCHOOL_DBLP_AFFILIATION = ["Fudan"]
 
 # ---------------------------------------------------------------------------
 # 2. 大模型 API（OpenAI 兼容）
