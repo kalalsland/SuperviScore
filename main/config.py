@@ -13,6 +13,13 @@ SCHOOL = "fudan_ai"          # 可选: sjtu_cs / fudan_ai / fudan_sds
                              #       sjtu_sais（交大自动化与感知学院）
                              #       sjtu_see（交大电气工程学院）
                              #       sjtu_icisee（交大集成电路学院/信息与电子工程学院）
+                             #       sjtu_bme（交大生医工）/ fudan_bme（复旦生医工）
+                             #       ruc_info（人大信息学院）
+                             #       seu_cse（东南大学计算机/软件/AI）
+                             #       seu_cyber（东南大学网安学院）
+                             #       shanghaitech_sist（上科大信息学院）
+                             #       ustc_cs（中科大计算机）/ ustc_auto（中科大自动化）
+                             #       ustc_aids（中科大SAIDS人工智能与数据科学学院）
 
 # 该学校在 DBLP affiliation note 里的英文关键词（用于作者消歧，强烈建议填）
 # 换学校时一并改这里。多个关键词命中其一即可。

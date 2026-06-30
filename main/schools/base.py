@@ -45,4 +45,31 @@ def get_parser(school_name: str) -> SchoolParser:
     if school_name == "sjtu_icisee":
         from schools.sjtu_icisee import SjtuIciseeParser
         return SjtuIciseeParser()
+    if school_name == "ustc_cs":
+        from schools.ustc_cs import UstcCsParser
+        return UstcCsParser()
+    if school_name == "ruc_info":
+        from schools.ruc_info import RucInfoParser
+        return RucInfoParser()
+    if school_name == "fudan_bme":
+        from schools.fudan_bme import FudanBmeParser
+        return FudanBmeParser()
+    if school_name == "sjtu_bme":
+        from schools.sjtu_bme import SjtuBmeParser
+        return SjtuBmeParser()
+    if school_name == "seu_cse":
+        from schools.seu_cse import SeuCseParser
+        return SeuCseParser()
+    if school_name == "seu_cyber":
+        from schools.seu_cyber import SeuCyberParser
+        return SeuCyberParser()
+    if school_name == "shanghaitech_sist":
+        from schools.shanghaitech_sist import ShanghaitechSistParser
+        return ShanghaitechSistParser()
+    if school_name == "ustc_auto":
+        from schools.ustc_auto import UstcAutoParser
+        return UstcAutoParser()
+    if school_name == "ustc_aids":
+        from schools.ustc_aids import UstcAidsParser
+        return UstcAidsParser()
     raise ValueError(f"未知学校解析器: {school_name}（请在 schools/ 下实现并在 get_parser 注册）")
