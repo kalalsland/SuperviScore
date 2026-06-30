@@ -45,8 +45,11 @@ class Teacher:
     citations: Optional[int] = None        # 总引用量（Scholar）
     h_index: Optional[int] = None          # h 指数（Scholar）
     scholar_url: str = ""                  # Google Scholar 主页
-    github_url: str = ""                   # GitHub 主页
-    github_stars: Optional[int] = None     # 代表仓库总 star
+    github_url: str = ""                   # GitHub 主页 URL
+    github_stars: Optional[int] = None     # 所有公开仓库 star 总计
+    github_bio: str = ""                   # GitHub Profile 自我介绍
+    github_website: str = ""              # GitHub Profile 里的个人网站
+    github_pinned: list[str] = field(default_factory=list)  # GitHub Pinned 项目名
     representative_works: list[str] = field(default_factory=list)  # 代表作（高被引/高star）
 
     # —— 分析结果（analyzer 填充）——

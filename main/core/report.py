@@ -111,7 +111,16 @@ def write_detail(t: Teacher, rank: int, profile: dict, detail_dir: str,
     if t.scholar_url:
         lines.append(f"- **Google Scholar**：{t.scholar_url}")
     if t.github_url:
-        lines.append(f"- **GitHub**：{t.github_url}")
+        gh_line = f"- **GitHub Profile**：{t.github_url}"
+        if t.github_stars:
+            gh_line += f"（★{t.github_stars} total）"
+        lines.append(gh_line)
+        if t.github_bio:
+            lines.append(f"- **GitHub Bio**：{t.github_bio}")
+        if t.github_website:
+            lines.append(f"- **GitHub 个人网站**：{t.github_website}")
+        if t.github_pinned:
+            lines.append(f"- **GitHub Pinned**：{'、'.join(t.github_pinned)}")
     lines.append(f"- **DBLP**：{t.dblp_url or '(无)'}")
     lines.append(f"- **个人页**：{t.detail_url}\n")
 

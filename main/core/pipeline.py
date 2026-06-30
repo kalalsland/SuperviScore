@@ -73,6 +73,9 @@ def run():
             t.scholar_url = imp.get("scholar_url", "")
             t.github_url = imp.get("github_url", "")
             t.github_stars = imp.get("github_stars")
+            t.github_bio = imp.get("github_bio", "")
+            t.github_website = imp.get("github_website", "")
+            t.github_pinned = imp.get("github_pinned", [])
             t.representative_works = imp.get("representative_works", [])
 
             t.analysis = analyzer.analyze(t, profile, cache=cache)

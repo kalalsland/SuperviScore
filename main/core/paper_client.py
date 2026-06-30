@@ -201,13 +201,23 @@ def enrich_impact(cn_name: str, pinyin: str, institute_hint: str,
             out["github_url"] = gh.get("github_url", "")
             out["github_stars"] = gh.get("stars")
             out["github_repos"] = gh.get("repos", [])
+            # 额外保存 profile 主页信息
+            out["github_bio"] = gh.get("bio", "")
+            out["github_website"] = gh.get("website", "")
+            out["github_pinned"] = gh.get("pinned", [])
             if out["github_url"]:
                 sources.append("github")
 
-    # 综合代表作：Scholar 高被引优先，GitHub 高 star 仓库补充
+    # 综合代表作：Scholar 高被引优先，GitHub pinned 项目补充（比 star 排序更能代表本人工作）
     reps = list(out["scholar_works"])
-    for name, star, _desc in out["github_repos"][:3]:
-        reps.append(f"{name}（GitHub ★{star}）")
+    pinned = out.get("github_pinned", [])
+    if pinned:
+        for repo_name in pinned[:3]:
+            reps.append(f"{repo_name}（GitHub Pinned）")
+    elif out.get("github_repos"):
+        for name, star, _desc in out["github_repos"][:2]:
+            if star > 0:
+                reps.append(f"{name}（GitHub ★{star}）")
     out["representative_works"] = reps[:6]
     out["impact_source"] = "+".join(sources) if sources else "none"
 
