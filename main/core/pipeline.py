@@ -89,6 +89,6 @@ def run():
 
     # 4) 排序 + 输出
     teachers.sort(key=lambda x: (x.score.final_score if x.score else 0), reverse=True)
-    report.write_all(teachers, profile, out_dir)
+    report.write_all(teachers, profile, out_dir, school_display=parser.display_name)
     log(f"\n==== 完成。共 {len(teachers)} 人，结果在: {out_dir} ====")
     return teachers

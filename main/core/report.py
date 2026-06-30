@@ -13,8 +13,10 @@ def _flags_str(t: Teacher) -> str:
     return " / ".join(t.score.flags) if t.score and t.score.flags else ""
 
 
-def write_csv(teachers: list[Teacher], out_dir: str):
-    path = os.path.join(out_dir, "推荐名单.csv")
+def write_csv(teachers: list[Teacher], out_dir: str, school_display: str = ""):
+    # 文件名带学院名，不同学院不互相覆盖
+    fname = f"推荐名单_{school_display}.csv" if school_display else "推荐名单.csv"
+    path = os.path.join(out_dir, fname)
     # utf-8-sig 让 Excel 正确识别中文
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
@@ -80,7 +82,8 @@ def _letter_user(t: Teacher, profile: dict) -> str:
 请写出套磁邮件正文。"""
 
 
-def write_detail(t: Teacher, rank: int, profile: dict, detail_dir: str, gen_letter: bool = True):
+def write_detail(t: Teacher, rank: int, profile: dict, detail_dir: str,
+                 gen_letter: bool = True, school_display: str = ""):
     anal = t.analysis or {}
     sc = t.score
     rd = anal.get("refined_directions") or {}
@@ -88,7 +91,9 @@ def write_detail(t: Teacher, rank: int, profile: dict, detail_dir: str, gen_lett
     idm = anal.get("identity_match") or {}
 
     lines = []
-    lines.append(f"# 第 {rank} 名 · {t.name}（推荐分 {sc.final_score if sc else 0}）\n")
+    # 标题中加入学院名，方便跨学院比较时分辨
+    school_tag = f"【{school_display}】" if school_display else ""
+    lines.append(f"# 第 {rank} 名 · {school_tag}{t.name}（推荐分 {sc.final_score if sc else 0}）\n")
     lines.append(f"- **职称**：{t.title}　|　**研究所**：{t.institute}")
     lines.append(f"- **博导(职称启发式)**：{'是' if sc and sc.is_phd_advisor_guess else '否 ⚠待核实'}")
     impact = []
@@ -167,15 +172,15 @@ def write_detail(t: Teacher, rank: int, profile: dict, detail_dir: str, gen_lett
     return path
 
 
-def write_all(teachers: list[Teacher], profile: dict, out_dir: str):
+def write_all(teachers: list[Teacher], profile: dict, out_dir: str, school_display: str = ""):
     """teachers 已按推荐分倒序。
-    - CSV：全部老师
-    - 详情 Markdown：综合分 Top N 详情
+    - CSV：全部老师（文件名含学院名，不同学院不覆盖）
+    - 详情 Markdown：综合分 Top N 详情（标题含学院名）
     - 套磁信：只给「综合分前 K」∪「方向匹配分前 K」生成（K=config.TOP_N_LETTER）
       —— 既覆盖最可能上岸的，也不漏掉方向最契合的。
     """
     os.makedirs(out_dir, exist_ok=True)
-    write_csv(teachers, out_dir)
+    write_csv(teachers, out_dir, school_display=school_display)
 
     top_n = config.TOP_N_DETAIL
     k = getattr(config, "TOP_N_LETTER", 5)
@@ -192,7 +197,8 @@ def write_all(teachers: list[Teacher], profile: dict, out_dir: str):
     for i, t in enumerate(teachers[:top_n], 1):
         try:
             gen = id(t) in letter_set
-            p = write_detail(t, i, profile, detail_dir, gen_letter=gen)
+            p = write_detail(t, i, profile, detail_dir, gen_letter=gen,
+                             school_display=school_display)
             tag = "详情+套磁信" if gen else "详情"
             log(f"[report] {tag} 第{i}名 {t.name} -> {os.path.basename(p)}")
         except Exception as e:
@@ -205,7 +211,8 @@ def write_all(teachers: list[Teacher], profile: dict, out_dir: str):
             continue
         extra_rank += 1
         try:
-            p = write_detail(t, extra_rank, profile, detail_dir, gen_letter=True)
+            p = write_detail(t, extra_rank, profile, detail_dir, gen_letter=True,
+                             school_display=school_display)
             log(f"[report] 匹配高分补充 {t.name}（匹配{t.score.match_score if t.score else 0}）"
                 f" -> {os.path.basename(p)}")
         except Exception as e:
