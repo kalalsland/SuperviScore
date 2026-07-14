@@ -24,11 +24,13 @@ BASE_URL = "http://www.ict.cas.cn"
 LIST_URL = "http://www.ict.cas.cn/yjsjy/dsjj/bd/"
 
 
-def _fetch_gbk(url: str) -> str:
-    """用 gb18030 解码页面，返回 unicode 字符串。"""
+def _fetch_page(url: str) -> str:
+    """抓页面并正确解码（CAS 计算所页面声明 UTF-8，实际也是 UTF-8）。"""
     resp = http_get(url, timeout=config.HTTP_TIMEOUT, retries=3, backoff=4.0,
                     headers={"User-Agent": "Mozilla/5.0"})
-    resp.encoding = "gb18030"
+    # 页面 <meta charset="utf-8">，Content-Type 可能不带 charset 导致 requests
+    # 默认 ISO-8859-1；强制用 UTF-8 解码。
+    resp.encoding = "utf-8"
     return resp.text
 
 
@@ -52,7 +54,7 @@ class IctCasParser(SchoolParser):
 
     def fetch_teacher_list(self) -> list[TeacherStub]:
         log(f"[ict_cas] 抓列表 {LIST_URL}")
-        html = _fetch_gbk(LIST_URL)
+        html = _fetch_page(LIST_URL)
 
         # <li class="...avatar-box..."> ... <a href="...">姓名</a> ... </li>
         items = re.findall(
@@ -87,7 +89,7 @@ class IctCasParser(SchoolParser):
     def fetch_teacher_detail(self, stub: TeacherStub) -> Teacher:
         t = Teacher(name=stub.name, detail_url=stub.detail_url)
         try:
-            html = _fetch_gbk(stub.detail_url)
+            html = _fetch_page(stub.detail_url)
             polite_sleep(getattr(config, "HTTP_SLEEP", 1.0))
 
             # ── 卡片区 dd.swwls_imgtextlist_dd ──────────────────────────────
