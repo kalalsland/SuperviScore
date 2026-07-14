@@ -40,6 +40,7 @@ AFFILIATION_MAP: dict[str, list[str]] = {
     "ustc_cs":           ["University of Science and Technology of China", "USTC"],
     "ustc_auto":         ["University of Science and Technology of China", "USTC"],
     "ustc_aids":         ["University of Science and Technology of China", "USTC"],
+    "ict_cas":           ["Institute of Computing Technology", "Chinese Academy of Sciences", "ICT"],
 }
 
 

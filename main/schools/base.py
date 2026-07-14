@@ -72,4 +72,7 @@ def get_parser(school_name: str) -> SchoolParser:
     if school_name == "ustc_aids":
         from schools.ustc_aids import UstcAidsParser
         return UstcAidsParser()
+    if school_name == "ict_cas":
+        from schools.ict_cas import IctCasParser
+        return IctCasParser()
     raise ValueError(f"未知学校解析器: {school_name}（请在 schools/ 下实现并在 get_parser 注册）")
