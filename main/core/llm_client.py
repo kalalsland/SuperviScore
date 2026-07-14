@@ -41,7 +41,9 @@ def chat(system: str, user: str, temperature: float = 0.3, max_tokens: int = 200
         except Exception as e:
             last = e
             log(f"[llm] 调用失败(第{attempt+1}次): {e}")
-            time.sleep(2 * (attempt + 1))
+            # 502/503 是服务端临时过载，等更久
+            wait = 15.0 if "502" in str(e) or "503" in str(e) else 4.0 * (attempt + 1)
+            time.sleep(wait)
     raise last
 
 
@@ -83,6 +85,7 @@ def chat_json(system: str, user: str, temperature: float = 0.2, max_tokens: int 
                 return parsed
         except Exception as e:
             log(f"[llm] JSON 调用失败(第{attempt+1}次): {e}")
-        time.sleep(2 * (attempt + 1))
+            wait = 15.0 if "502" in str(e) or "503" in str(e) else 4.0 * (attempt + 1)
+            time.sleep(wait)
     log(f"[llm] JSON 解析最终失败，原文片段: {last_text[:200]}")
     return None

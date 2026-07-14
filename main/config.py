@@ -41,7 +41,7 @@ LLM_BASE_URL = os.environ.get("TAOCI_LLM_BASE_URL", "")  # 例: https://api.open
 LLM_API_KEY  = os.environ.get("TAOCI_LLM_API_KEY",  "")  # 例: sk-xxxxxxxx
 LLM_MODEL    = os.environ.get("TAOCI_LLM_MODEL",    "")  # 例: gpt-4o-mini
 LLM_TIMEOUT  = 120          # 单次请求超时（秒）
-LLM_MAX_RETRY = 3           # 失败重试次数
+LLM_MAX_RETRY = 5           # 失败重试次数（502/503 等临时故障需多几次）
 
 # 本地覆盖（config_local.py 不入库）：未设环境变量时，用本地文件里的值补上
 try:
