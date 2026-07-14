@@ -55,8 +55,33 @@ def run():
             log(f"\n[{idx}/{total}] 处理 {stub.name}（{stub.institute}）")
             t = parser.fetch_teacher_detail(stub)
             pinyin = _pinyin_from_url(stub.detail_url)
-            # 复旦等个人页 URL 无拼音 → 用中文姓名（paper_client 内部会转拼音检索）
             name_key = pinyin or t.name
+
+            # ── 预筛：方向差距过大则跳过昂贵的 DBLP/Scholar/LLM 细化 ──────
+            if getattr(config, "USE_PRESCREEN", False):
+                threshold = getattr(config, "PRESCREEN_THRESHOLD", 25)
+                pre_score = analyzer.quick_screen(t, profile, cache=cache)
+                log(f"    预筛分 {pre_score}/100（阈值 {threshold}）")
+                if pre_score < threshold:
+                    log(f"    → 方向差距过大，跳过细化，写入 CSV 低分占位")
+                    from core.models import ScoreResult
+                    t.analysis = {
+                        "identity_match": {"is_same_person": None, "confidence": 0.0,
+                                           "reason": "预筛跳过"},
+                        "refined_directions": {"tags": [], "summary": "（预筛跳过）"},
+                        "match_with_user": {"score": pre_score, "overlap_points": [],
+                                            "reason": "方向与申请人差距过大，预筛跳过细化"},
+                        "direction_drift": {"level": "low", "reason": ""},
+                        "seniority": {"level": "mid", "is_too_hard_to_get_in": False,
+                                      "reason": ""},
+                        "is_recruiting_phd_guess": True,
+                        "approach_strategy": "（方向不符，不建议套磁）",
+                        "_prescreened_out": True,
+                    }
+                    from core import scorer
+                    t.score = scorer.score(t, t.analysis)
+                    teachers.append(t)
+                    continue
 
             pr = paper_client.recent_papers(t.name, name_key, t.institute, cache=cache)
             t.papers = pr["papers"]

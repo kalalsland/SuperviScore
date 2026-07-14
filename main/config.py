@@ -66,6 +66,8 @@ OUTPUT_ROOT = TOOL_ROOT
 # 4. 运行范围 / 性能
 # ---------------------------------------------------------------------------
 LIMIT = 0                   # >0 时只处理前 N 位老师（冒烟测试用）；0=全部
+USE_PRESCREEN = True        # 在 DBLP/Scholar/LLM 细化前做轻量方向预筛（省时省 token）
+PRESCREEN_THRESHOLD = 25    # 预筛方向匹配分低于此值则跳过细化，仍写入 CSV（0-100）
 TOP_N_DETAIL = 20           # 仅对推荐分前 N 位生成 Markdown 详情 + 套磁信
 RECENT_PAPERS = 5           # 每位老师检索最近几篇论文
 TOP_N_LETTER = 5            # 套磁信：综合分前 N + 方向匹配前 N 各生成一封

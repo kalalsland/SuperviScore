@@ -75,6 +75,40 @@ def _papers_block(t: Teacher) -> str:
     return "\n".join(lines)
 
 
+PRESCREEN_SYS = "你是研究生导师方向匹配助手。根据导师简介判断与申请人的方向相关性，只输出一个 0-100 的整数，不要任何解释。"
+
+
+def quick_screen(teacher: Teacher, user_profile: dict, cache: Cache = None) -> int:
+    """轻量预筛：只看简介和官网论文标题，输出方向匹配分 0-100。
+    调用量小（max_tokens=4），用于在 DBLP/Scholar/LLM 细化前快速过滤方向偏差大的导师。
+    """
+    ckey = f"prescreen|{teacher.name}|{teacher.detail_url}"
+    if cache:
+        cached = cache.get("prescreen", ckey)
+        if cached is not None:
+            return int(cached)
+
+    user_areas = ", ".join(user_profile.get("research_areas", []))
+    user_preferred = ", ".join(user_profile.get("preferred_directions", []))
+    papers_hint = "; ".join(teacher.papers_listed[:5]) or "(无)"
+    bio_hint = (teacher.bio or "")[:600]
+
+    prompt = (f"申请人方向: {user_areas}；最感兴趣: {user_preferred}\n"
+              f"导师简介: {bio_hint}\n"
+              f"官网论文(部分): {papers_hint}\n"
+              f"方向匹配分(0-100):")
+    try:
+        raw = llm_client.chat(PRESCREEN_SYS, prompt, max_tokens=4, temperature=0.0)
+        score = int("".join(filter(str.isdigit, (raw or "").strip()))[:3] or "50")
+        score = max(0, min(100, score))
+    except Exception:
+        score = 50   # 调用失败 → 保守保留
+
+    if cache:
+        cache.set("prescreen", ckey, score)
+    return score
+
+
 def analyze(teacher: Teacher, user_profile: dict, cache: Cache = None) -> dict:
     ckey = f"analyze|{teacher.name}|{teacher.detail_url}|{len(teacher.papers)}|{teacher.identity_confidence:.2f}"
     if cache:
