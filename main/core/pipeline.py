@@ -64,7 +64,6 @@ def run():
                 log(f"    预筛分 {pre_score}/100（阈值 {threshold}）")
                 if pre_score < threshold:
                     log(f"    → 方向差距过大，跳过细化，写入 CSV 低分占位")
-                    from core.models import ScoreResult
                     t.analysis = {
                         "identity_match": {"is_same_person": None, "confidence": 0.0,
                                            "reason": "预筛跳过"},
@@ -78,7 +77,6 @@ def run():
                         "approach_strategy": "（方向不符，不建议套磁）",
                         "_prescreened_out": True,
                     }
-                    from core import scorer
                     t.score = scorer.score(t, t.analysis)
                     teachers.append(t)
                     continue
