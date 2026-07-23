@@ -75,4 +75,22 @@ def get_parser(school_name: str) -> SchoolParser:
     if school_name == "ict_cas":
         from schools.ict_cas import IctCasParser
         return IctCasParser()
+    if school_name == "nju_cs":
+        from schools.nju_cs import NjuCsParser
+        return NjuCsParser()
+    if school_name == "nju_software":
+        from schools.nju_software import NjuSoftwareParser
+        return NjuSoftwareParser()
+    if school_name == "nju_is":
+        from schools.nju_is import NjuIsParser
+        return NjuIsParser()
+    if school_name == "tongji_cs":
+        from schools.tongji_cs import TongjiCsParser
+        return TongjiCsParser()
+    if school_name == "ecnu_sei":
+        from schools.ecnu_sei import EcnuSeiParser
+        return EcnuSeiParser()
+    if school_name == "ecnu_cs":
+        from schools.ecnu_cs import EcnuCsParser
+        return EcnuCsParser()
     raise ValueError(f"未知学校解析器: {school_name}（请在 schools/ 下实现并在 get_parser 注册）")

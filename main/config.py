@@ -10,16 +10,14 @@ import os
 # 1. 选择本次要跑的学校（对应 schools/ 下的模块名）
 # ---------------------------------------------------------------------------
 SCHOOL = "fudan_ai"          # 可选: sjtu_cs / fudan_ai / fudan_sds
-                             #       sjtu_sais（交大自动化与感知学院）
-                             #       sjtu_see（交大电气工程学院）
-                             #       sjtu_icisee（交大集成电路学院/信息与电子工程学院）
-                             #       sjtu_bme（交大生医工）/ fudan_bme（复旦生医工）
-                             #       ruc_info（人大信息学院）
-                             #       seu_cse（东南大学计算机/软件/AI）
-                             #       seu_cyber（东南大学网安学院）
-                             #       shanghaitech_sist（上科大信息学院）
-                             #       ustc_cs（中科大计算机）/ ustc_auto（中科大自动化）
-                             #       ustc_aids（中科大SAIDS人工智能与数据科学学院）
+                             #       sjtu_sais / sjtu_see / sjtu_icisee
+                             #       sjtu_bme / fudan_bme / ruc_info
+                             #       seu_cse / seu_cyber / shanghaitech_sist
+                             #       ustc_cs / ustc_auto / ustc_aids
+                             #       ict_cas（中科院计算所）
+                             #       nju_cs / nju_software / nju_is（南大）
+                             #       tongji_cs（同济）
+                             #       ecnu_sei / ecnu_cs（华师）
 
 # 该学校在 DBLP affiliation note 里的英文关键词（用于作者消歧，强烈建议填）
 # 换学校时一并改这里。多个关键词命中其一即可。
@@ -40,7 +38,7 @@ SCHOOL_DBLP_AFFILIATION = ["Fudan"]
 LLM_BASE_URL = os.environ.get("TAOCI_LLM_BASE_URL", "")  # 例: https://api.openai.com/v1
 LLM_API_KEY  = os.environ.get("TAOCI_LLM_API_KEY",  "")  # 例: sk-xxxxxxxx
 LLM_MODEL    = os.environ.get("TAOCI_LLM_MODEL",    "")  # 例: gpt-4o-mini
-LLM_TIMEOUT  = 120          # 单次请求超时（秒）
+LLM_TIMEOUT  = 300          # 单次请求超时（秒）——531288.xyz 端点响应较慢，放宽避免误判超时
 LLM_MAX_RETRY = 5           # 失败重试次数（502/503 等临时故障需多几次）
 
 # 本地覆盖（config_local.py 不入库）：未设环境变量时，用本地文件里的值补上
