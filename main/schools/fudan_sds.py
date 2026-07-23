@@ -37,7 +37,7 @@ def _clean(s: str) -> str:
 class FudanSdsParser(SchoolParser):
     name = "fudan_sds"
     display_name = "复旦大学大数据学院"
-    output_dir_name = "复旦老师联系"
+    output_dir_name = "复旦大数据学院导师联系"
     dblp_affiliation = ["Fudan"]
 
     def __init__(self):

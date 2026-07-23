@@ -40,7 +40,7 @@ def _clean(s: str) -> str:
 class FudanAiParser(SchoolParser):
     name = "fudan_ai"
     display_name = "复旦大学计算与智能创新学院"
-    output_dir_name = "复旦老师联系"
+    output_dir_name = "复旦AI学院导师联系"
 
     # 该校在 DBLP affiliation note 里的关键词（供 paper_client 消歧；config 里也会覆盖）
     dblp_affiliation = ["Fudan"]
